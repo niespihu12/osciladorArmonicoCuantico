@@ -43,10 +43,16 @@ ifeq ($(OS), Windows_NT)
 else
 	$(VENV_DIR)/bin/python $(PYTHON_SCRIPT)
 endif
+	$(MAKE) view_image
 
 view_image:
-	sudo apt install -y eog
-	eog graficas.png
+ifeq ($(OS), Darwin) # macOS
+	open graficas.png
+else ifeq ($(OS), Linux) # Linux
+	xdg-open graficas.png
+else ifeq ($(OS), Windows_NT) # Windows
+	start graficas.png
+endif
 
 clean:
 	rm -f $(TARGET)
