@@ -8,16 +8,52 @@ VENV_DIR = .venv
 # Detección de sistema operativo
 OS := $(shell uname -s)
 
-.PHONY: all clean venv run_c run_python view_image
+# Variables para verificar dependencias
+PYTHON_CMD := $(shell which python3 2>/dev/null || which python 2>/dev/null)
+GCC_CMD := $(shell which gcc 2>/dev/null)
+EOG_CMD := $(shell which eog 2>/dev/null)
 
-all: run_c run_python
+.PHONY: all clean venv run_c run_python view_image check_dependencies install_dependencies
+
+all: check_dependencies run_c run_python
+
+# Verificar dependencias
+check_dependencies: install_dependencies
+	@echo "Verificando dependencias..."
+
+# Instalar dependencias según el sistema operativo
+install_dependencies:
+ifeq ($(OS), Linux)
+	@if [ -z "$(GCC_CMD)" ]; then \
+		echo "Instalando gcc..."; \
+		sudo apt-get update && sudo apt-get install -y gcc; \
+	fi
+	@if [ -z "$(PYTHON_CMD)" ]; then \
+		echo "Instalando Python..."; \
+		sudo apt-get update && sudo apt-get install -y python3 python3-pip python3-venv; \
+	fi
+	@if [ -z "$(EOG_CMD)" ]; then \
+		echo "Instalando eog..."; \
+		sudo apt-get update && sudo apt-get install -y eog; \
+	fi
+else ifeq ($(OS), Darwin)
+	@if [ -z "$(GCC_CMD)" ]; then \
+		echo "Instalando gcc..."; \
+		xcode-select --install; \
+	fi
+	@if [ -z "$(PYTHON_CMD)" ]; then \
+		echo "Instalando Python..."; \
+		brew install python3; \
+	fi
+else ifeq ($(OS), Windows_NT)
+	@echo "En Windows, por favor instala manualmente Python, GCC (MinGW) y un visor de imágenes"
+endif
 
 $(TARGET): $(SRC)
 	$(CC) $(CFLAGS) $(SRC) -o $(TARGET) -lm
 
 venv: $(VENV_DIR)/bin/activate
 
-# Ajusta la ruta de activación del entorno virtual según el sistema operativo
 $(VENV_DIR)/bin/activate:
 ifeq ($(OS), Darwin) # macOS
 	python3 -m venv $(VENV_DIR)
@@ -49,7 +85,11 @@ view_image:
 ifeq ($(OS), Darwin) # macOS
 	open graficas.png
 else ifeq ($(OS), Linux) # Linux
-	xdg-open graficas.png
+	if [ -x "$(EOG_CMD)" ]; then \
+		eog graficas.png; \
+	else \
+		xdg-open graficas.png; \
+	fi
 else ifeq ($(OS), Windows_NT) # Windows
 	start graficas.png
 endif
@@ -57,11 +97,7 @@ endif
 clean:
 	rm -f $(TARGET)
 	rm -rf $(VENV_DIR)
-	rm -f estado_0.txt
-	rm -f estado_1.txt
-	rm -f estado_2.txt
-	rm -f estado_3.txt
-	rm -f graficas.png
+	rm -f estado_0.txt estado_1.txt estado_2.txt estado_3.txt graficas.png
 ifeq ($(OS), Windows_NT)
 	del /f $(TARGET).exe
 endif
