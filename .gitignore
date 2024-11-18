@@ -1,9 +1,8 @@
 .venv
-data.txt
 ejecutable.exe
 graficas.png
 estado_0.txt
 estado_1.txt
 estado_2.txt
 estado_3.txt
-oscillator
+oscilador

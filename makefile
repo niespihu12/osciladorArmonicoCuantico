@@ -1,38 +1,34 @@
-C = gcc
-O = -o
-W = -Wall
-PAQUETES = -lm
+CC = gcc
+CFLAGS = -Wall -lm
+TARGET = oscilador
+SRC = main.c
+PYTHON_SCRIPT = main.py
+VENV_DIR = .venv
 
-ARCHIVO_C = main.c
-EJECUTABLE_C = oscilador
-VENV = venv
-ARCHIVO_PY = main.py
+.PHONY: all clean venv run_c run_python
 
-.PHONY: all clean run python_run c_run
+all: run_c run_python
 
-all: $(EJECUTABLE_C) python_venv
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) $(SRC) -o $(TARGET) -lm
 
-# C compilation rule
-$(EJECUTABLE_C): $(ARCHIVO_C)
-	$(C) $(W) $(O) $@ $^ $(PAQUETES)
+venv: $(VENV_DIR)/bin/activate
 
-# Python virtual environment setup
-python_venv: $(VENV)/bin/activate
+$(VENV_DIR)/bin/activate:
+	python3 -m venv $(VENV_DIR)
+	$(VENV_DIR)/bin/pip install -r requirements.txt
 
-$(VENV)/bin/activate: requirements.txt
-	python3 -m venv $(VENV)
-	./$(VENV)/bin/pip install -r requirements.txt
+run_c: $(TARGET)
+	./$(TARGET)
 
-# Run C executable
-c_run: $(EJECUTABLE_C)
-	./$(EJECUTABLE_C)
+run_python: venv
+	./$(VENV_DIR)/bin/python $(PYTHON_SCRIPT)
 
-# Run Python script in virtual environment
-python_run: python_venv
-	./$(VENV)/bin/python3 $(ARCHIVO_PY)
-
-# Clean both C executable and Python virtual environment
 clean:
-	rm -f $(EJECUTABLE_C)
-	rm -rf $(VENV)
-	find . -type f -name '*.pyc' -delete
+	rm -f $(TARGET)
+	rm -rf $(VENV_DIR)
+	rm -r estado_0.txt
+	rm -r estado_1.txt
+	rm -r estado_2.txt
+	rm -r estado_3.txt
+	rm -r graficas.png
