@@ -36,6 +36,19 @@ ifeq ($(OS), Linux)
 		echo "Instalando eog..."; \
 		sudo apt-get update && sudo apt-get install -y eog; \
 	fi
+else ifeq ($(DISTRO), fedora)
+	@if [ -z "$(GCC_CMD)" ]; then \
+		echo "Instalando gcc en Fedora..."; \
+		sudo dnf install -y gcc; \
+	fi
+	@if [ -z "$(PYTHON_CMD)" ]; then \
+		echo "Instalando Python en Fedora..."; \
+		sudo dnf install -y python3 python3-pip python3-virtualenv; \
+	fi
+	@if [ -z "$(EOG_CMD)" ]; then \
+		echo "Instalando eog en Fedora..."; \
+		sudo dnf install -y eog; \
+	fi
 else ifeq ($(OS), Darwin)
 	@if [ -z "$(GCC_CMD)" ]; then \
 		echo "Instalando gcc..."; \
@@ -45,6 +58,7 @@ else ifeq ($(OS), Darwin)
 		echo "Instalando Python..."; \
 		brew install python3; \
 	fi
+
 else ifeq ($(OS), Windows_NT)
 	@echo "En Windows, por favor instala manualmente Python, GCC (MinGW) y un visor de imágenes"
 endif
